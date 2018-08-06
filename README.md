@@ -8,11 +8,13 @@ Terraform will output the ELB Id and ELB Dns Name.
 
 ## App
 
-A python app which responds to '/hello/<name>'' and returns "Hello, <name>."
+A python app which responds to '/hello/*name*' and returns "Hello, *name*."
 
-A call to '/' will receive a 200 OK (for health check).
+A call to '/hello/' will prompt for a name.
 
-Most other calls will receive a 400 Bad Request.
+A call to '/' will receive a 200 OK (acts as health check).
+
+Any other call will receive a 400 Bad Request.
 
 ## Terraform
 
