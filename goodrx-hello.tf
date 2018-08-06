@@ -173,3 +173,12 @@ resource "aws_elb" "goodrx-hello-elb" {
   connection_draining_timeout = 400
 
 }
+
+output "ELB ID" {
+  value = "${aws_elb.goodrx-hello-elb.id}"
+}
+
+
+output "ELB DNS Name" {
+  value = "${aws_elb.goodrx-hello-elb.dns_name}"
+}

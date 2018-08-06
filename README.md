@@ -4,6 +4,8 @@
 
 Run 'launch.sh' to deploy. *(This requires terraform to be installed and appropriate aws credentials configured.).*
 
+Terraform will output the ELB Id and ELB Dns Name.
+
 ## App
 
 A python app which responds to '/hello/<name>'' and returns "Hello, <name>."
