@@ -2,7 +2,7 @@
 
 ## Deploy
 
-Run 'launch.sh' to deploy the app. (This requires terraform to be installed and the private key to be added to your ssh-agent).
+Run 'launch.sh' to deploy. *(This requires terraform to be installed).*
 
 ## App
 
@@ -14,6 +14,12 @@ Most other calls will receive a 400 Bad Request.
 
 ## Terraform
 
-The app is deployed to aws using terraform. The 'launch.sh' script will install the necessary plugin (aws, template), create a plan, then apply the plan to your environment.
+The app is deployed using terraform.
 
-You can modify the target vpc and subnets for the deployment by editing the variables in goodrx-hello.tf.
+The 'launch.sh' script will:
+- Run terraform init to ensure plugins are installed
+- Create a terraform plan
+- Apply the plan
+- Delete the plan
+
+You can modify the target vpc and subnets by editing the variables in goodrx-hello.tf.
