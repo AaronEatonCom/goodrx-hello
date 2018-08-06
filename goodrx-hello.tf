@@ -139,7 +139,6 @@ resource "aws_security_group" "goodrx-hello-elb-sg" {
 # AWS Instance Definition.
 resource "aws_instance" "goodrx-hello-instance" {
   ami                         = "ami-f2d3638a"
-  # associate_public_ip_address = true # Uncomment for access to the instance outside VPC
   instance_type               = "t2.nano"
   key_name                    = "${aws_key_pair.goodrx-hello-keypair.key_name}"
   subnet_id                   = "${var.subnet_ids[0]}"
