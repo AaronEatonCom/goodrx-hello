@@ -2,7 +2,7 @@
 
 ## Deploy
 
-Run 'launch.sh' to deploy. *(This requires terraform to be installed).*
+Run 'launch.sh' to deploy. *(This requires terraform to be installed and appropriate aws credentials configured.).*
 
 ## App
 
