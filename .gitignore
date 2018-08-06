@@ -7,3 +7,10 @@
 
 # .tfvars files
 *.tfvars
+
+# Local Test Zone Terraform Files
+testzone
+testzone/*
+
+# Mac Stuff
+**/.DS_Store
