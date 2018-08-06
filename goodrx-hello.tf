@@ -4,29 +4,18 @@ variable "region" {
 }
 
 variable "vpc_id" {
-  default = "vpc-d6936dae"
+  default = "vpc-989558e1"
 }
 
 variable "subnet_ids" {
-  default = ["subnet-13eda66a","subnet-1deecb47","subnet-2446326f"]
+  default = ["subnet-11b69b59","subnet-94212cf2","subnet-e0bf46ba"]
 }
 
 provider "aws" {
   region     = "${var.region}"
 }
 
-# Template Data for cloud-config of code
-# Because our codebase consists of one file and three config files, we 
-# can fit it into the user_data for the ec2 instance using a template.
-
-# data "template_file" "user_data" {
-#   template = "${file("./user-data.tpl")}"
-
-#   vars {
-#     bundle_file = "${file("./bundle.tar.gz")}"
-#   }
-# }
-
+# Our "Codebase" is small enough that we can load it using cloud-config.
 data "template_cloudinit_config" "config" {
   gzip          = true
   base64_encode = true
@@ -87,23 +76,19 @@ resource "aws_key_pair" "goodrx-hello-keypair" {
 
 # AWS Security Group Definitions. 
 
-/* Instance Security Group
-Although the instructions say to lock the instance to the elb, I found the need to open port 22
-to use the terraform file provisioners and the remote-exec.
-Assuming another form of provisioning (chef,puppet) was available, or a bastion, this port could be closed.
-Alternatively, app and config files could be synced to s3 and the deploy script run from the ec2 userdata.
-*/
+# Instance Security Group
 resource "aws_security_group" "goodrx-hello-instance-sg" {
   name        = "goodrx-hello-instance-sg"
   description = "Allow SSH to World, port 80 to ELB."
   vpc_id      = "${var.vpc_id}"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # Uncomment to allow SSH access to the instance.
+  # ingress {
+  #   from_port   = 22
+  #   to_port     = 22
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   ingress {
     from_port       = 80
@@ -125,6 +110,7 @@ resource "aws_security_group" "goodrx-hello-instance-sg" {
 
 }
 
+# ELB Security Group
 resource "aws_security_group" "goodrx-hello-elb-sg" {
   name        = "goodrx-hello-elb-sg"
   description = "Port 80 open to the World."
@@ -150,68 +136,15 @@ resource "aws_security_group" "goodrx-hello-elb-sg" {
 
 }
 
-/* AWS Instance Definition.
-Public IP Address Association is enabled to allow Terraform provisioning.
-  If this is not desirable, the deploy script can be modified to pull code from github (not ideal),
-  s3 (also not ideal but can be updated from local git repos if github is down),
-  deployed as a custom package from a local repo,
-  or rsynced directly from an available fileserver.
-
-*/
+# AWS Instance Definition.
 resource "aws_instance" "goodrx-hello-instance" {
   ami                         = "ami-f2d3638a"
-  associate_public_ip_address = true
+  # associate_public_ip_address = true # Uncomment for access to the instance outside VPC
   instance_type               = "t2.nano"
   key_name                    = "${aws_key_pair.goodrx-hello-keypair.key_name}"
   subnet_id                   = "${var.subnet_ids[0]}"
   user_data_base64            = "${data.template_cloudinit_config.config.rendered}"
   vpc_security_group_ids      = ["${aws_security_group.goodrx-hello-instance-sg.id}"]
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "mkdir -p /home/ec2-user/{goodrx-hello,deploy}",
-  #   ]
-
-  #   connection {
-  #     type     = "ssh"
-  #     user     = "ec2-user"
-  #   }
-
-  # }
-
-  # provisioner "file" {
-  #   source      = "app/"
-  #   destination = "/home/ec2-user/goodrx-hello/"
-
-  #   connection {
-  #     type     = "ssh"
-  #     user     = "ec2-user"
-  #   }
-
-  # }
-
-  # provisioner "file" {
-  #   source      = "conf/"
-  #   destination = "/home/ec2-user/deploy"
-
-  #   connection {
-  #     type     = "ssh"
-  #     user     = "ec2-user"
-  #   }
-
-  # }
-
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "sudo chmod +x /home/ec2-user/deploy/deploy.sh",
-  #     "sudo /home/ec2-user/deploy/deploy.sh",
-  #   ]
-
-  #   connection {
-  #     type     = "ssh"
-  #     user     = "ec2-user"
-  #   }
-  # }
-
 }
 
 resource "aws_elb" "goodrx-hello-elb" {
@@ -240,9 +173,3 @@ resource "aws_elb" "goodrx-hello-elb" {
   connection_draining_timeout = 400
 
 }
-
-output "user-data-base64" {
-  value = "${data.template_cloudinit_config.config.rendered}"
-}
-
-
